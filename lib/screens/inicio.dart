@@ -423,8 +423,8 @@ class _ProductsScreenState extends State<ProductsScreen> {
             label: 'Roomies',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_today),
-            label: 'Reservas',
+            icon: Icon(Icons.add_home_work),
+            label: 'Propiedades',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),

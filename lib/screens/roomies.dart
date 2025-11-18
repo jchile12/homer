@@ -18,12 +18,12 @@ class _ChatsScreenState extends State<ChatsScreen> {
   int _currentIndex = 1;
 
   void _onTabTapped(int index) {
-    if (index == 0) {
+    if (index ==2) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const PublishPropertyScreen()),
       );
-    } else if (index == 2) {
+    } else if (index == 0) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const ProductsScreen()),
@@ -133,7 +133,7 @@ class _ChatsScreenState extends State<ChatsScreen> {
               children: [
                 const SizedBox(height: 16),
                 const Text(
-                  'Editar contacto',
+                  'Editar roomie',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 24),
@@ -163,13 +163,13 @@ class _ChatsScreenState extends State<ChatsScreen> {
                         final newName = nameController.text.trim();
                         if (newName.isNotEmpty) {
                           await FirebaseFirestore.instance
-                              .collection('contacts')
+                              .collection('roomies')
                               .doc(docId)
                               .update({'name': newName});
                           final messenger = ScaffoldMessenger.of(context);
                           Navigator.pop(context);
                           messenger.showSnackBar(
-                            const SnackBar(content: Text('Contacto actualizado correctamente')),
+                            const SnackBar(content: Text('Roomie actualizado correctamente')),
                           );
                         }
                       },
@@ -189,7 +189,7 @@ class _ChatsScreenState extends State<ChatsScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Eliminar contacto'),
+        title: const Text('Eliminar roomie'),
         content: const Text('¿Estás seguro de que quieres eliminar este contacto?'),
         actions: [
           TextButton(
@@ -217,7 +217,7 @@ class _ChatsScreenState extends State<ChatsScreen> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.primary,
-        title: const Text('Whatsapp', style: TextStyle(color: Colors.white)),
+        title: const Text('Agregar Roomies', style: TextStyle(color: Colors.white)),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout, color: Colors.white),
@@ -239,7 +239,7 @@ class _ChatsScreenState extends State<ChatsScreen> {
                 child: TextField(
                   controller: _searchController,
                   decoration: InputDecoration(
-                    hintText: 'Buscar productos...',
+                    hintText: 'Buscar roomie guardado...',
                     fillColor: Colors.white,
                     filled: true,
                     prefixIcon: const Icon(Icons.search),
@@ -273,8 +273,8 @@ class _ChatsScreenState extends State<ChatsScreen> {
             label: 'Roomies',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_today),
-            label: 'Reservas',
+            icon: Icon(Icons.add_home_work),
+            label: 'Propiedades',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),

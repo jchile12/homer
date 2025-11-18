@@ -116,7 +116,7 @@ class _MiCuentaScreenState extends State<MiCuentaScreen> {
   }
 
   void _onTabTapped(int index) {
-    if (index == 0) {
+    if (index == 2) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const PublishPropertyScreen()),
@@ -126,7 +126,7 @@ class _MiCuentaScreenState extends State<MiCuentaScreen> {
         context,
         MaterialPageRoute(builder: (_) => const ChatsScreen()),
       );
-    } else if (index == 2) {
+    } else if (index == 0) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const ProductsScreen()),
@@ -179,7 +179,7 @@ class _MiCuentaScreenState extends State<MiCuentaScreen> {
     if (confirmed == true) {
       try {
         await FirebaseFirestore.instance
-            .collection('properties')
+            .collection('propiedades')
             .doc(propertyId)
             .delete();
         
@@ -660,7 +660,7 @@ class _MiCuentaScreenState extends State<MiCuentaScreen> {
                               const SizedBox(height: 16),
                               StreamBuilder<QuerySnapshot>(
                                 stream: FirebaseFirestore.instance
-                                    .collection('properties')
+                                    .collection('propiedades')
                                     .where('userId', isEqualTo: user.uid)
                                     .snapshots(),
                                 builder: (context, snapshot) {
@@ -808,8 +808,8 @@ class _MiCuentaScreenState extends State<MiCuentaScreen> {
             label: 'Roomies',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_today),
-            label: 'Reservas',
+            icon: Icon(Icons.add_home_work),
+            label: 'Propiedades',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
@@ -820,10 +820,6 @@ class _MiCuentaScreenState extends State<MiCuentaScreen> {
     );
   }
 }
-
-// ============================================
-// PANTALLA DE EDICIÓN (sin cambios)
-// ============================================
 
 class EditPropertyScreen extends StatefulWidget {
   final String propertyId;
@@ -929,7 +925,7 @@ class _EditPropertyScreenState extends State<EditPropertyScreen> {
           _cercanias.entries.where((e) => e.value).map((e) => e.key).toList();
 
       await FirebaseFirestore.instance
-          .collection('properties')
+          .collection('propiedades')
           .doc(widget.propertyId)
           .update({
         'tipo': _tipoPropiedad,

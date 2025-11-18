@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart'; // ✅ AGREGADO
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:homer/screens/inicio.dart';
 import 'package:homer/screens/roomies.dart';
 import 'package:homer/screens/detalle_propiedades.dart';
+import 'package:homer/screens/miCuenta.dart';
 
 class PublishPropertyScreen extends StatefulWidget {
   const PublishPropertyScreen({Key? key}) : super(key: key);
@@ -14,10 +15,10 @@ class PublishPropertyScreen extends StatefulWidget {
 
 class _PublishPropertyScreenState extends State<PublishPropertyScreen> {
   int _currentStep = 0;
-  int _currentIndex = 0;
+  int _currentIndex = 2;
 
   void _onTabTapped(int index) {
-    if (index == 2) {
+    if (index == 0) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const ProductsScreen()),
@@ -26,6 +27,11 @@ class _PublishPropertyScreenState extends State<PublishPropertyScreen> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const ChatsScreen()),
+      );
+    } else if (index == 3) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const MiCuentaScreen()),
       );
     } else {
       setState(() => _currentIndex = index);
@@ -127,6 +133,8 @@ class _PublishPropertyScreenState extends State<PublishPropertyScreen> {
 
   void _showFormDialog() {
     _resetForm();
+    final colors = Theme.of(context).colorScheme;
+    
     showDialog<void>(
       context: context,
       barrierDismissible: false,
@@ -151,8 +159,12 @@ class _PublishPropertyScreenState extends State<PublishPropertyScreen> {
                   height: 500,
                   child: Column(
                     children: [
-                      Text('Publicación de Propiedad',
-                          style: Theme.of(context).textTheme.titleLarge),
+                      Text(
+                        'Publicación de Propiedad',
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          color: colors.onSurface,
+                        ),
+                      ),
                       const SizedBox(height: 16),
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 8),
@@ -172,15 +184,17 @@ class _PublishPropertyScreenState extends State<PublishPropertyScreen> {
                                           decoration: BoxDecoration(
                                             shape: BoxShape.circle,
                                             color: isActive
-                                                ? Theme.of(context).colorScheme.primary
-                                                : Colors.grey.shade300,
+                                                ? colors.primary
+                                                : colors.surfaceContainerHighest,
                                           ),
                                           child: Center(
-                                            child: Text('${index + 1}',
-                                                style: TextStyle(
-                                                  color: isActive ? Colors.white : Colors.grey.shade600,
-                                                  fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
-                                                )),
+                                            child: Text(
+                                              '${index + 1}',
+                                              style: TextStyle(
+                                                color: isActive ? colors.onPrimary : colors.onSurfaceVariant,
+                                                fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
+                                              ),
+                                            ),
                                           ),
                                         ),
                                         const SizedBox(height: 4),
@@ -188,7 +202,7 @@ class _PublishPropertyScreenState extends State<PublishPropertyScreen> {
                                           index == 0 ? 'Info' : index == 1 ? 'Detalles' : index == 2 ? 'Precio' : 'Cercanía',
                                           style: TextStyle(
                                             fontSize: 11,
-                                            color: isActive ? Theme.of(context).colorScheme.primary : Colors.grey.shade600,
+                                            color: isActive ? colors.primary : colors.onSurfaceVariant,
                                             fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
                                           ),
                                         ),
@@ -199,7 +213,7 @@ class _PublishPropertyScreenState extends State<PublishPropertyScreen> {
                                     Expanded(
                                       child: Container(
                                         height: 2,
-                                        color: isActive ? Theme.of(context).colorScheme.primary : Colors.grey.shade300,
+                                        color: isActive ? colors.primary : colors.surfaceContainerHighest,
                                       ),
                                     ),
                                 ],
@@ -237,8 +251,8 @@ class _PublishPropertyScreenState extends State<PublishPropertyScreen> {
                           const SizedBox(width: 8),
                           ElevatedButton(
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Theme.of(context).colorScheme.primary,
-                              foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                              backgroundColor: colors.primary,
+                              foregroundColor: colors.onPrimary,
                             ),
                             onPressed: continueSB,
                             child: Text(_currentStep == 3 ? 'Finalizar' : 'Siguiente'),
@@ -257,6 +271,7 @@ class _PublishPropertyScreenState extends State<PublishPropertyScreen> {
   }
 
   Future<void> _showResumenDialog() async {
+    final colors = Theme.of(context).colorScheme;
     final tipo = _tipoPropiedad;
     final direccion1 = _direccion1Controller.text.trim();
     final direccion2 = _direccion2Controller.text.trim();
@@ -285,69 +300,69 @@ class _PublishPropertyScreenState extends State<PublishPropertyScreen> {
             children: <Widget>[
               ListTile(
                 contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-                leading: const Icon(Icons.home_outlined),
+                leading: Icon(Icons.home_outlined, color: colors.primary),
                 title: const Text('Tipo'),
                 subtitle: Text(tipo),
               ),
               ListTile(
                 contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-                leading: const Icon(Icons.location_on_outlined),
+                leading: Icon(Icons.location_on_outlined, color: colors.primary),
                 title: const Text('Dirección'),
                 subtitle: Text('$direccion1${direccion2.isNotEmpty ? ', $direccion2' : ''}'),
               ),
               ListTile(
                 contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-                leading: const Icon(Icons.map_outlined),
+                leading: Icon(Icons.map_outlined, color: colors.primary),
                 title: const Text('Comuna'),
                 subtitle: Text(comuna),
               ),
               ListTile(
                 contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-                leading: const Icon(Icons.square_foot_outlined),
+                leading: Icon(Icons.square_foot_outlined, color: colors.primary),
                 title: const Text('Metros²'),
                 subtitle: Text('${metros.toStringAsFixed(0)}'),
               ),
               ListTile(
                 contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-                leading: const Icon(Icons.bed_outlined),
+                leading: Icon(Icons.bed_outlined, color: colors.primary),
                 title: const Text('Dormitorios'),
                 subtitle: Text('$dormitorios'),
               ),
               ListTile(
                 contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-                leading: const Icon(Icons.bathroom_outlined),
+                leading: Icon(Icons.bathroom_outlined, color: colors.primary),
                 title: const Text('Baños'),
                 subtitle: Text('$banos'),
               ),
               if (extras.isNotEmpty)
                 ListTile(
                   contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-                  leading: const Icon(Icons.checklist_outlined),
+                  leading: Icon(Icons.checklist_outlined, color: colors.primary),
                   title: const Text('Extras'),
                   subtitle: Text(extras),
                 ),
               ListTile(
                 contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-                leading: const Icon(Icons.attach_money_outlined),
+                leading: Icon(Icons.attach_money_outlined, color: colors.primary),
                 title: const Text('Precio'),
                 subtitle: Text('${precio.toInt()} UF'),
               ),
               ListTile(
                 contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-                leading: const Icon(Icons.account_balance_wallet_outlined),
+                leading: Icon(Icons.account_balance_wallet_outlined, color: colors.primary),
                 title: const Text('Gastos Comunes'),
                 subtitle: Text('\$${gastos.toInt()}'),
               ),
               ListTile(
                 contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-                leading: const Icon(Icons.image_outlined),
+                leading: Icon(Icons.image_outlined, color: colors.primary),
                 title: const Text('Imágenes'),
                 subtitle: Text('${_imagenesUrls.length} foto(s)'),
               ),
               if (cercaniasSeleccionadas.isNotEmpty)
                 ListTile(
                   contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-                  leading: const Icon(Icons.place_outlined),
+                  leading: Icon(Icons.place_outlined, color: colors.primary),
                   title: const Text('Cercanías'),
                   subtitle: Text(cercaniasSeleccionadas.join(', ')),
                 ),
@@ -361,8 +376,8 @@ class _PublishPropertyScreenState extends State<PublishPropertyScreen> {
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.primary,
-              foregroundColor: Theme.of(context).colorScheme.onPrimary,
+              backgroundColor: colors.primary,
+              foregroundColor: colors.onPrimary,
             ),
             onPressed: () => Navigator.pop(context, true),
             child: const Text('Aceptar'),
@@ -380,9 +395,6 @@ class _PublishPropertyScreenState extends State<PublishPropertyScreen> {
     }
   }
 
-  // ✅ ============================================
-  // MÉTODO _submit() CON userId AGREGADO
-  // ============================================
   Future<void> _submit() async {
     showDialog(
       context: context,
@@ -391,7 +403,6 @@ class _PublishPropertyScreenState extends State<PublishPropertyScreen> {
     );
 
     try {
-      // ✅ NUEVO: Obtener el usuario actual
       final user = FirebaseAuth.instance.currentUser;
       
       if (user == null) {
@@ -420,8 +431,8 @@ class _PublishPropertyScreenState extends State<PublishPropertyScreen> {
         'gastosComunes': double.tryParse(_gastosController.text.trim()) ?? 0,
         'imagenes': _imagenesUrls,
         'cercanias': cercaniasSeleccionadas,
-        'userId': user.uid,           // ✅ NUEVO: ID del usuario
-        'userEmail': user.email,      // ✅ NUEVO: Email del usuario (opcional)
+        'userId': user.uid,
+        'userEmail': user.email,
         'timestamp': FieldValue.serverTimestamp(),
       });
 
@@ -467,98 +478,220 @@ class _PublishPropertyScreenState extends State<PublishPropertyScreen> {
         ],
       );
 
-  Widget _buildPaso2(StateSetter setStateSB) => Column(
-        children: <Widget>[
-          TextField(controller: _metrosController, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Metros cuadrados', border: OutlineInputBorder())),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: DropdownButtonFormField<int>(
-                  value: _dormitorios,
-                  decoration: const InputDecoration(labelText: 'Dormitorios', border: OutlineInputBorder()),
-                  items: _dormitoriosList.map((d) => DropdownMenuItem<int>(value: d, child: Text(d.toString()))).toList(),
-                  onChanged: (v) => setStateSB(() => _dormitorios = v ?? _dormitorios),
-                ),
+  Widget _buildPaso2(StateSetter setStateSB) {
+    final colors = Theme.of(context).colorScheme;
+    
+    return Column(
+      children: <Widget>[
+        TextField(controller: _metrosController, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Metros cuadrados', border: OutlineInputBorder())),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(
+              child: DropdownButtonFormField<int>(
+                value: _dormitorios,
+                decoration: const InputDecoration(labelText: 'Dormitorios', border: OutlineInputBorder()),
+                items: _dormitoriosList.map((d) => DropdownMenuItem<int>(value: d, child: Text(d.toString()))).toList(),
+                onChanged: (v) => setStateSB(() => _dormitorios = v ?? _dormitorios),
               ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: DropdownButtonFormField<int>(
-                  value: _banos,
-                  decoration: const InputDecoration(labelText: 'Baños', border: OutlineInputBorder()),
-                  items: _banosList.map((b) => DropdownMenuItem<int>(value: b, child: Text(b.toString()))).toList(),
-                  onChanged: (v) => setStateSB(() => _banos = v ?? _banos),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          CheckboxListTile(title: const Text('Estacionamiento'), value: _estacionamiento, onChanged: (v) => setStateSB(() => _estacionamiento = v ?? false)),
-          CheckboxListTile(title: const Text('Bodega'), value: _bodega, onChanged: (v) => setStateSB(() => _bodega = v ?? false)),
-          CheckboxListTile(title: const Text('Permite Mascotas'), value: _mascotas, onChanged: (v) => setStateSB(() => _mascotas = v ?? false)),
-        ],
-      );
-
-  Widget _buildPaso3(StateSetter setStateSB) => SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            TextField(controller: _precioController, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Precio (UF)', border: OutlineInputBorder())),
-            const SizedBox(height: 16),
-            TextField(controller: _gastosController, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Gastos Comunes (\$)', border: OutlineInputBorder())),
-            const SizedBox(height: 20),
-            Text('Imágenes de la propiedad', style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 8),
-            Text('Puedes agregar URLs de imágenes o usar un placeholder', style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey.shade600)),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(child: TextField(controller: _imagenUrlController, decoration: const InputDecoration(labelText: 'URL de imagen', hintText: 'https://ejemplo.com/imagen.jpg', border: OutlineInputBorder()))),
-                const SizedBox(width: 8),
-                IconButton(onPressed: () { _agregarImagenUrl(); setStateSB(() {}); }, icon: const Icon(Icons.add), style: IconButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.primary, foregroundColor: Colors.white)),
-              ],
             ),
-            const SizedBox(height: 12),
-            OutlinedButton.icon(onPressed: () { _usarImagenPlaceholder(); setStateSB(() {}); }, icon: const Icon(Icons.image), label: const Text('Usar imagen de ejemplo')),
-            const SizedBox(height: 16),
-            if (_imagenesUrls.isNotEmpty)
-              SizedBox(
-                height: 120,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: _imagenesUrls.length,
-                  itemBuilder: (context, index) => Stack(
-                    children: [
-                      Container(
-                        margin: const EdgeInsets.only(right: 8),
-                        width: 120,
-                        decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), border: Border.all(color: Colors.grey)),
-                        child: ClipRRect(borderRadius: BorderRadius.circular(8), child: Image.network(_imagenesUrls[index], fit: BoxFit.cover, errorBuilder: (_, __, ___) => Container(color: Colors.grey.shade300, child: const Icon(Icons.error)))),
-                      ),
-                      Positioned(top: 4, right: 12, child: GestureDetector(onTap: () { _removeImagenUrl(index); setStateSB(() {}); }, child: Container(decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle), child: const Icon(Icons.close, color: Colors.white, size: 20)))),
-                    ],
-                  ),
-                ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: DropdownButtonFormField<int>(
+                value: _banos,
+                decoration: const InputDecoration(labelText: 'Baños', border: OutlineInputBorder()),
+                items: _banosList.map((b) => DropdownMenuItem<int>(value: b, child: Text(b.toString()))).toList(),
+                onChanged: (v) => setStateSB(() => _banos = v ?? _banos),
               ),
-            if (_imagenesUrls.isEmpty) Container(height: 100, decoration: BoxDecoration(border: Border.all(color: Colors.grey), borderRadius: BorderRadius.circular(8)), child: const Center(child: Text('No hay imágenes agregadas'))),
+            ),
           ],
         ),
-      );
+        const SizedBox(height: 16),
+        CheckboxListTile(
+          title: const Text('Estacionamiento'),
+          value: _estacionamiento,
+          onChanged: (v) => setStateSB(() => _estacionamiento = v ?? false),
+          activeColor: colors.primary,
+        ),
+        CheckboxListTile(
+          title: const Text('Bodega'),
+          value: _bodega,
+          onChanged: (v) => setStateSB(() => _bodega = v ?? false),
+          activeColor: colors.primary,
+        ),
+        CheckboxListTile(
+          title: const Text('Permite Mascotas'),
+          value: _mascotas,
+          onChanged: (v) => setStateSB(() => _mascotas = v ?? false),
+          activeColor: colors.primary,
+        ),
+      ],
+    );
+  }
 
-  Widget _buildPaso4(StateSetter setStateSB) {
-    final iconos = {
-      'Transporte público': Icons.directions_bus, 'Mall': Icons.shopping_bag_outlined, 'Parque': Icons.park_outlined,
-      'Ciclovía': Icons.pedal_bike, 'Hospital': Icons.local_hospital_outlined, 'Restaurantes': Icons.restaurant_outlined,
-      'Colegio': Icons.school_outlined, 'Supermercado': Icons.shopping_cart_outlined, 'Jardín infantil': Icons.child_care_outlined,
-    };
+  Widget _buildPaso3(StateSetter setStateSB) {
     final colors = Theme.of(context).colorScheme;
+    
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Text('Cercanías importantes', style: Theme.of(context).textTheme.titleMedium),
+          TextField(controller: _precioController, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Precio (UF)', border: OutlineInputBorder())),
+          const SizedBox(height: 16),
+          TextField(controller: _gastosController, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Gastos Comunes (\$)', border: OutlineInputBorder())),
+          const SizedBox(height: 20),
+          Text(
+            'Imágenes de la propiedad',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              color: colors.onSurface,
+            ),
+          ),
           const SizedBox(height: 8),
-          Text('Selecciona los lugares cercanos a la propiedad:', style: Theme.of(context).textTheme.bodySmall),
+          Text(
+            'Puedes agregar URLs de imágenes o usar un placeholder',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: colors.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _imagenUrlController,
+                  decoration: const InputDecoration(
+                    labelText: 'URL de imagen',
+                    hintText: 'https://ejemplo.com/imagen.jpg',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              IconButton(
+                onPressed: () {
+                  _agregarImagenUrl();
+                  setStateSB(() {});
+                },
+                icon: const Icon(Icons.add),
+                style: IconButton.styleFrom(
+                  backgroundColor: colors.primary,
+                  foregroundColor: colors.onPrimary,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          OutlinedButton.icon(
+            onPressed: () {
+              _usarImagenPlaceholder();
+              setStateSB(() {});
+            },
+            icon: const Icon(Icons.image),
+            label: const Text('Usar imagen de ejemplo'),
+          ),
+          const SizedBox(height: 16),
+          if (_imagenesUrls.isNotEmpty)
+            SizedBox(
+              height: 120,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: _imagenesUrls.length,
+                itemBuilder: (context, index) => Stack(
+                  children: [
+                    Container(
+                      margin: const EdgeInsets.only(right: 8),
+                      width: 120,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: colors.outline),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.network(
+                          _imagenesUrls[index],
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => Container(
+                            color: colors.surfaceContainerHighest,
+                            child: Icon(Icons.error, color: colors.error),
+                          ),
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      top: 4,
+                      right: 12,
+                      child: GestureDetector(
+                        onTap: () {
+                          _removeImagenUrl(index);
+                          setStateSB(() {});
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: colors.error,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.close,
+                            color: colors.onError,
+                            size: 20,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          if (_imagenesUrls.isEmpty)
+            Container(
+              height: 100,
+              decoration: BoxDecoration(
+                border: Border.all(color: colors.outline),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Center(
+                child: Text(
+                  'No hay imágenes agregadas',
+                  style: TextStyle(color: colors.onSurfaceVariant),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPaso4(StateSetter setStateSB) {
+    final iconos = {
+      'Transporte público': Icons.directions_bus,
+      'Mall': Icons.shopping_bag_outlined,
+      'Parque': Icons.park_outlined,
+      'Ciclovía': Icons.pedal_bike,
+      'Hospital': Icons.local_hospital_outlined,
+      'Restaurantes': Icons.restaurant_outlined,
+      'Colegio': Icons.school_outlined,
+      'Supermercado': Icons.shopping_cart_outlined,
+      'Jardín infantil': Icons.child_care_outlined,
+    };
+    final colors = Theme.of(context).colorScheme;
+    
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(
+            'Cercanías importantes',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              color: colors.onSurface,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Selecciona los lugares cercanos a la propiedad:',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: colors.onSurfaceVariant,
+            ),
+          ),
           const SizedBox(height: 16),
           Wrap(
             spacing: 8,
@@ -566,14 +699,20 @@ class _PublishPropertyScreenState extends State<PublishPropertyScreen> {
             children: _cercanias.keys.map((cercania) {
               final sel = _cercanias[cercania] ?? false;
               return FilterChip(
-                avatar: Icon(iconos[cercania] ?? Icons.place, size: 20, color: sel ? colors.onSecondary : colors.secondary),
+                avatar: Icon(
+                  iconos[cercania] ?? Icons.place,
+                  size: 20,
+                  color: sel ? colors.onSecondaryContainer : colors.secondary,
+                ),
                 label: Text(cercania),
                 selected: sel,
                 onSelected: (v) => setStateSB(() => _cercanias[cercania] = v),
-                backgroundColor: Colors.transparent,
-                selectedColor: colors.secondary.withOpacity(0.85),
-                checkmarkColor: colors.onSecondary,
-                labelStyle: TextStyle(color: sel ? colors.onSecondary : colors.secondary),
+                backgroundColor: colors.surface,
+                selectedColor: colors.secondaryContainer,
+                checkmarkColor: colors.onSecondaryContainer,
+                labelStyle: TextStyle(
+                  color: sel ? colors.onSecondaryContainer : colors.onSurface,
+                ),
                 side: BorderSide(color: colors.secondary, width: 1.3),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
               );
@@ -599,7 +738,17 @@ class _PublishPropertyScreenState extends State<PublishPropertyScreen> {
     final bodega = data['bodega'] ?? false;
     final mascotas = data['mascotas'] ?? false;
     final colors = Theme.of(context).colorScheme;
-    final iconos = {'Transporte público': Icons.directions_bus, 'Mall': Icons.shopping_bag_outlined, 'Parque': Icons.park_outlined, 'Ciclovía': Icons.pedal_bike, 'Hospital': Icons.local_hospital_outlined, 'Restaurantes': Icons.restaurant_outlined, 'Colegio': Icons.school_outlined, 'Supermercado': Icons.shopping_cart_outlined, 'Jardín infantil': Icons.child_care_outlined};
+    final iconos = {
+      'Transporte público': Icons.directions_bus,
+      'Mall': Icons.shopping_bag_outlined,
+      'Parque': Icons.park_outlined,
+      'Ciclovía': Icons.pedal_bike,
+      'Hospital': Icons.local_hospital_outlined,
+      'Restaurantes': Icons.restaurant_outlined,
+      'Colegio': Icons.school_outlined,
+      'Supermercado': Icons.shopping_cart_outlined,
+      'Jardín infantil': Icons.child_care_outlined,
+    };
 
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
@@ -613,9 +762,39 @@ class _PublishPropertyScreenState extends State<PublishPropertyScreen> {
               borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
               child: Stack(
                 children: [
-                  Image.network(imagenes[0], height: 200, width: double.infinity, fit: BoxFit.cover, errorBuilder: (_, __, ___) => Container(height: 200, color: Colors.grey.shade300, child: const Icon(Icons.image_not_supported, size: 50))),
+                  Image.network(
+                    imagenes[0],
+                    height: 200,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => Container(
+                      height: 200,
+                      color: colors.surfaceContainerHighest,
+                      child: Icon(Icons.image_not_supported, size: 50, color: colors.onSurfaceVariant),
+                    ),
+                  ),
                   if (imagenes.length > 1)
-                    Positioned(bottom: 8, right: 8, child: Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4), decoration: BoxDecoration(color: Colors.black54, borderRadius: BorderRadius.circular(12)), child: Row(children: [const Icon(Icons.photo_library, size: 14, color: Colors.white), const SizedBox(width: 4), Text('${imagenes.length}', style: const TextStyle(color: Colors.white, fontSize: 12))]))),
+                    Positioned(
+                      bottom: 8,
+                      right: 8,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.black54,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.photo_library, size: 14, color: Colors.white),
+                            const SizedBox(width: 4),
+                            Text(
+                              '${imagenes.length}',
+                              style: const TextStyle(color: Colors.white, fontSize: 12),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -624,26 +803,71 @@ class _PublishPropertyScreenState extends State<PublishPropertyScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('${precio.toInt()} UF', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: colors.secondary)),
+                Text(
+                  '${precio.toInt()} UF',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: colors.secondary,
+                  ),
+                ),
                 const SizedBox(height: 8),
-                Text('$tipo • $comuna', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                Text(
+                  '$tipo • $comuna',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: colors.onSurface,
+                  ),
+                ),
                 const SizedBox(height: 4),
-                Text('$direccion1${direccion2.isNotEmpty ? ', $direccion2' : ''}', style: TextStyle(fontSize: 14, color: Colors.grey.shade600)),
+                Text(
+                  '$direccion1${direccion2.isNotEmpty ? ', $direccion2' : ''}',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: colors.onSurfaceVariant,
+                  ),
+                ),
                 const SizedBox(height: 12),
-                Row(children: [Icon(Icons.square_foot, size: 18, color: Colors.grey.shade700), const SizedBox(width: 4), Text('${metros.toInt()} m²'), const SizedBox(width: 16), Icon(Icons.bed_outlined, size: 18, color: Colors.grey.shade700), const SizedBox(width: 4), Text('$dormitorios dorm.'), const SizedBox(width: 16), Icon(Icons.bathroom_outlined, size: 18, color: Colors.grey.shade700), const SizedBox(width: 4), Text('$banos baños')]),
+                Row(
+                  children: [
+                    Icon(Icons.square_foot, size: 18, color: colors.onSurfaceVariant),
+                    const SizedBox(width: 4),
+                    Text('${metros.toInt()} m²', style: TextStyle(color: colors.onSurface)),
+                    const SizedBox(width: 16),
+                    Icon(Icons.bed_outlined, size: 18, color: colors.onSurfaceVariant),
+                    const SizedBox(width: 4),
+                    Text('$dormitorios dorm.', style: TextStyle(color: colors.onSurface)),
+                    const SizedBox(width: 16),
+                    Icon(Icons.bathroom_outlined, size: 18, color: colors.onSurfaceVariant),
+                    const SizedBox(width: 4),
+                    Text('$banos baños', style: TextStyle(color: colors.onSurface)),
+                  ],
+                ),
                 if (estacionamiento || bodega || mascotas) ...[
                   const SizedBox(height: 12),
-                  Wrap(spacing: 8, runSpacing: 4, children: [
-                    if (estacionamiento) _buildExtraChip('Estacionamiento', Icons.local_parking),
-                    if (bodega) _buildExtraChip('Bodega', Icons.warehouse),
-                    if (mascotas) _buildExtraChip('Permitido Mascotas', Icons.pets),
-                  ]),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 4,
+                    children: [
+                      if (estacionamiento) _buildExtraChip('Estacionamiento', Icons.local_parking),
+                      if (bodega) _buildExtraChip('Bodega', Icons.warehouse),
+                      if (mascotas) _buildExtraChip('Permitido Mascotas', Icons.pets),
+                    ],
+                  ),
                 ],
                 if (cercanias.isNotEmpty) ...[
                   const SizedBox(height: 16),
                   const Divider(),
                   const SizedBox(height: 8),
-                  Text('Cerca de:', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.grey.shade700)),
+                  Text(
+                    'Cerca de:',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: colors.onSurfaceVariant,
+                    ),
+                  ),
                   const SizedBox(height: 8),
                   Wrap(
                     spacing: 6,
@@ -652,12 +876,41 @@ class _PublishPropertyScreenState extends State<PublishPropertyScreen> {
                       final icono = iconos[c.toString()] ?? Icons.place;
                       return Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                        decoration: BoxDecoration(color: colors.secondary.withOpacity(0.1), borderRadius: BorderRadius.circular(16), border: Border.all(color: colors.secondary.withOpacity(0.3))),
-                        child: Row(mainAxisSize: MainAxisSize.min, children: [Icon(icono, size: 14, color: colors.secondary), const SizedBox(width: 4), Text(c.toString(), style: TextStyle(fontSize: 11, color: colors.secondary, fontWeight: FontWeight.w500))]),
+                        decoration: BoxDecoration(
+                          color: colors.secondaryContainer,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: colors.secondary.withOpacity(0.3)),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(icono, size: 14, color: colors.onSecondaryContainer),
+                            const SizedBox(width: 4),
+                            Text(
+                              c.toString(),
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: colors.onSecondaryContainer,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
                       );
                     }).toList(),
                   ),
-                  if (cercanias.length > 6) Padding(padding: const EdgeInsets.only(top: 6), child: Text('+${cercanias.length - 6} más', style: TextStyle(fontSize: 11, color: Colors.grey.shade600, fontStyle: FontStyle.italic))),
+                  if (cercanias.length > 6)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 6),
+                      child: Text(
+                        '+${cercanias.length - 6} más',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: colors.onSurfaceVariant,
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                    ),
                 ],
               ],
             ),
@@ -667,23 +920,58 @@ class _PublishPropertyScreenState extends State<PublishPropertyScreen> {
     );
   }
 
-  Widget _buildExtraChip(String label, IconData icon) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        decoration: BoxDecoration(color: Colors.grey.shade100, borderRadius: BorderRadius.circular(16)),
-        child: Row(mainAxisSize: MainAxisSize.min, children: [Icon(icon, size: 14, color: Colors.grey.shade700), const SizedBox(width: 4), Text(label, style: TextStyle(fontSize: 11, color: Colors.grey.shade700))]),
-      );
+  Widget _buildExtraChip(String label, IconData icon) {
+    final colors = Theme.of(context).colorScheme;
+    
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: colors.onSurfaceVariant),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 11,
+              color: colors.onSurfaceVariant,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    
     return Scaffold(
-      appBar: AppBar(title: const Text('Propiedades')),
+      appBar: AppBar(
+        backgroundColor: colors.primary,
+        foregroundColor: colors.onPrimary,
+        title: const Text('Propiedades'),
+      ),
       body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance.collection('properties').orderBy('timestamp', descending: true).snapshots(),
+        stream: FirebaseFirestore.instance
+            .collection('properties')
+            .orderBy('timestamp', descending: true)
+            .snapshots(),
         builder: (context, snapshot) {
-          if (snapshot.hasError) return const Center(child: Text('Error al cargar propiedades'));
-          if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
+          if (snapshot.hasError) {
+            return const Center(child: Text('Error al cargar propiedades'));
+          }
+          if (!snapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
           final docs = snapshot.data!.docs;
-          if (docs.isEmpty) return const Center(child: Text('No hay propiedades publicadas'));
+          if (docs.isEmpty) {
+            return const Center(child: Text('No hay propiedades publicadas'));
+          }
           return ListView.builder(
             padding: const EdgeInsets.all(12),
             itemCount: docs.length,
@@ -710,17 +998,33 @@ class _PublishPropertyScreenState extends State<PublishPropertyScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showFormDialog,
+        backgroundColor: colors.primary,
+        foregroundColor: colors.onPrimary,
         child: const Icon(Icons.add),
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: _onTabTapped,
-        selectedItemColor: Theme.of(context).colorScheme.primary,
+        selectedItemColor: colors.primary,
         unselectedItemColor: Colors.grey,
+        type: BottomNavigationBarType.fixed,
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.category), label: 'Otros'),
-          BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'Chats'),
-          BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Buscar'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Inicio',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.group),
+            label: 'Roomies',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.add_home_work),
+            label: 'Propiedades',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Mi cuenta',
+          ),
         ],
       ),
     );

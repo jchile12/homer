@@ -13,7 +13,6 @@ class PropertyDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tipo = propertyData['tipo'] ?? '';
     final direccion1 = propertyData['direccion1'] ?? '';
     final direccion2 = propertyData['direccion2'] ?? '';
     final comuna = propertyData['comuna'] ?? '';
@@ -23,7 +22,6 @@ class PropertyDetailScreen extends StatelessWidget {
     final banos = propertyData['banos'] ?? 0;
     final dormitorios = propertyData['dormitorios'] ?? 0;
     final imagenes = propertyData['imagenes'] as List<dynamic>? ?? [];
-    final cercanias = propertyData['cercanias'] as List<dynamic>? ?? [];
     final estacionamiento = propertyData['estacionamiento'] ?? false;
     final bodega = propertyData['bodega'] ?? false;
     final mascotas = propertyData['mascotas'] ?? false;
@@ -304,7 +302,7 @@ class PropertyDetailScreen extends StatelessWidget {
                     height: 260,
                     child: StreamBuilder<QuerySnapshot>(
                       stream: FirebaseFirestore.instance
-                          .collection('properties')
+                          .collection('propiedades')
                           .limit(5)
                           .snapshots(),
                       builder: (context, snapshot) {
@@ -312,12 +310,12 @@ class PropertyDetailScreen extends StatelessWidget {
                           return const Center(child: CircularProgressIndicator());
                         }
 
-                        final properties = snapshot.data!.docs
+                        final propiedades = snapshot.data!.docs
                             .where((doc) => doc.id != propertyId)
                             .take(3)
                             .toList();
 
-                        if (properties.isEmpty) {
+                        if (propiedades.isEmpty) {
                           return Center(
                             child: Text(
                               'No hay propiedades similares',
@@ -328,9 +326,9 @@ class PropertyDetailScreen extends StatelessWidget {
 
                         return ListView.builder(
                           scrollDirection: Axis.horizontal,
-                          itemCount: properties.length,
+                          itemCount: propiedades.length,
                           itemBuilder: (context, index) {
-                            final propData = properties[index].data() as Map<String, dynamic>;
+                            final propData = propiedades[index].data() as Map<String, dynamic>;
                             final precio = (propData['precio'] ?? 0).toDouble();
                             final metros = (propData['metros'] ?? 0).toDouble();
                             final imagenes = propData['imagenes'] as List<dynamic>? ?? [];
@@ -342,7 +340,7 @@ class PropertyDetailScreen extends StatelessWidget {
                                   MaterialPageRoute(
                                     builder: (_) => PropertyDetailScreen(
                                       propertyData: propData,
-                                      propertyId: properties[index].id,
+                                      propertyId: propiedades[index].id,
                                     ),
                                   ),
                                 );
