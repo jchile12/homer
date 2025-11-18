@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "350370218778",
+    "project_id": "homer-95f55",
+    "storage_bucket": "homer-95f55.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:350370218778:android:d136ebf55ddda845f362a3",
+        "android_client_info": {
+          "package_name": "com.example.homer"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "350370218778-llb6ci1uivtd5gf4b61mh7u7867tpovu.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.homer",
+            "certificate_hash": "2457e14f0bc3644bd0c085a590b97ebdf533ff9b"
+          }
+        },
+        {
+          "client_id": "350370218778-m9s2b6p38m7e9itktpvts83eg8p08272.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCnfV4aL_DK46mQD78kRhvhaYuTE9pWn7c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "350370218778-m9s2b6p38m7e9itktpvts83eg8p08272.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
