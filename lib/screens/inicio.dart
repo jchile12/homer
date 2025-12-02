@@ -4,6 +4,7 @@ import 'package:homer/screens/roomies.dart';
 import 'package:homer/screens/propiedades.dart';
 import 'package:homer/screens/miCuenta.dart';
 import 'package:homer/screens/resultado_busqueda.dart';
+import 'package:homer/screens/inicio_sesion.dart';
 
 class ProductsScreen extends StatefulWidget {
   const ProductsScreen({super.key});
@@ -84,7 +85,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
 
     try {
       // Obtener todas las propiedades
-      Query query = FirebaseFirestore.instance.collection('properties');
+      Query query = FirebaseFirestore.instance.collection('propiedades');
 
       // Filtro por tipo de propiedad
       if (_tipoPropiedadSeleccionado != null && _tipoPropiedadSeleccionado!.isNotEmpty) {

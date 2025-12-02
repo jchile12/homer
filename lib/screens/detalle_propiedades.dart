@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class PropertyDetailScreen extends StatelessWidget {
   final Map<String, dynamic> propertyData;
@@ -13,8 +14,11 @@ class PropertyDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final direccion1 = propertyData['direccion1'] ?? '';
-    final direccion2 = propertyData['direccion2'] ?? '';
+    // DATOS ACTUALIZADOS
+    final tipo = propertyData['tipo'] ?? '';
+    final direccion = propertyData['direccion'] ?? 
+                     '${propertyData['direccion1'] ?? ''} ${propertyData['direccion2'] ?? ''}'.trim();
+    final numeroDepto = propertyData['numeroDepto'] ?? '';
     final comuna = propertyData['comuna'] ?? '';
     final precio = (propertyData['precio'] ?? 0).toDouble();
     final gastosComunes = (propertyData['gastosComunes'] ?? 0).toDouble();
@@ -25,8 +29,28 @@ class PropertyDetailScreen extends StatelessWidget {
     final estacionamiento = propertyData['estacionamiento'] ?? false;
     final bodega = propertyData['bodega'] ?? false;
     final mascotas = propertyData['mascotas'] ?? false;
+    final cercanias = propertyData['cercanias'] as List<dynamic>? ?? [];
+    final latitud = propertyData['latitud'] as double?;
+    final longitud = propertyData['longitud'] as double?;
 
     final colors = Theme.of(context).colorScheme;
+
+    final iconosCercanias = {
+      'Transporte público': Icons.directions_bus,
+      'Mall': Icons.shopping_bag_outlined,
+      'Parque': Icons.park_outlined,
+      'Ciclovía': Icons.pedal_bike,
+      'Hospital': Icons.local_hospital_outlined,
+      'Restaurantes': Icons.restaurant_outlined,
+      'Colegio': Icons.school_outlined,
+      'Supermercado': Icons.shopping_cart_outlined,
+      'Jardín infantil': Icons.child_care_outlined,
+    };
+
+    // Dirección completa para mostrar
+    final direccionCompleta = numeroDepto.isNotEmpty 
+        ? '$direccion, Depto $numeroDepto' 
+        : direccion;
 
     return Scaffold(
       appBar: AppBar(
@@ -71,7 +95,7 @@ class PropertyDetailScreen extends StatelessWidget {
                 children: [
                   // Dirección
                   Text(
-                    '$direccion1${direccion2.isNotEmpty ? ', $direccion2' : ''}, $comuna',
+                    '$direccionCompleta, $comuna',
                     style: const TextStyle(
                       fontSize: 16,
                       color: Colors.grey,
@@ -79,7 +103,7 @@ class PropertyDetailScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Publicado por: Juanito Azarero',
+                    'Publicado por: ${propertyData['userEmail'] ?? 'Usuario'}',
                     style: TextStyle(
                       fontSize: 13,
                       color: colors.primary,
@@ -87,7 +111,7 @@ class PropertyDetailScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 20),
 
-// Precio
+                  // Precio
                   Text(
                     '${precio.toInt()} UF',
                     style: TextStyle(
@@ -243,6 +267,49 @@ class PropertyDetailScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 24),
 
+                  // Cercanías (NUEVO)
+                  if (cercanias.isNotEmpty) ...[
+                    const Text(
+                      'Cercanías:',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Wrap(
+                      spacing: 10,
+                      runSpacing: 10,
+                      children: cercanias.map<Widget>((c) {
+                        final icono = iconosCercanias[c.toString()] ?? Icons.place;
+                        return Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: colors.secondaryContainer,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: colors.secondary.withOpacity(0.3)),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(icono, size: 18, color: colors.onSecondaryContainer),
+                              const SizedBox(width: 8),
+                              Text(
+                                c.toString(),
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: colors.onSecondaryContainer,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+
                   // Ubicación
                   const Text(
                     'Ubicación:',
@@ -258,19 +325,40 @@ class PropertyDetailScreen extends StatelessWidget {
                       color: Colors.grey.shade200,
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.map, size: 50, color: Colors.grey.shade400),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Mapa de ubicación',
-                            style: TextStyle(color: Colors.grey.shade600),
+                    clipBehavior: Clip.antiAlias,
+                    child: latitud != null && longitud != null
+                        ? GoogleMap(
+                            initialCameraPosition: CameraPosition(
+                              target: LatLng(latitud, longitud),
+                              zoom: 15,
+                            ),
+                            markers: {
+                              Marker(
+                                markerId: const MarkerId('propiedad'),
+                                position: LatLng(latitud, longitud),
+                                infoWindow: InfoWindow(
+                                  title: tipo,
+                                  snippet: direccion,
+                                ),
+                              ),
+                            },
+                            zoomControlsEnabled: false,
+                            myLocationButtonEnabled: false,
+                            mapToolbarEnabled: false,
+                          )
+                        : Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.map, size: 50, color: Colors.grey.shade400),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Mapa de ubicación',
+                                  style: TextStyle(color: Colors.grey.shade600),
+                                ),
+                              ],
+                            ),
                           ),
-                        ],
-                      ),
-                    ),
                   ),
                   const SizedBox(height: 24),
 

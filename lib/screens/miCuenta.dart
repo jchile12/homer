@@ -33,7 +33,10 @@ class _MiCuentaScreenState extends State<MiCuentaScreen> {
     _loadUserData();
   }
 
+  // CRUD - READ: Cargar datos del usuario
   Future<void> _loadUserData() async {
+    setState(() => _isLoading = true);
+    
     try {
       final user = FirebaseAuth.instance.currentUser;
       
@@ -47,8 +50,7 @@ class _MiCuentaScreenState extends State<MiCuentaScreen> {
       final doc = await FirebaseFirestore.instance
           .collection('users')
           .doc(userId)
-          .get()
-          .timeout(const Duration(seconds: 5));
+          .get();
 
       if (doc.exists) {
         final data = doc.data()!;
@@ -62,6 +64,8 @@ class _MiCuentaScreenState extends State<MiCuentaScreen> {
           _isLoading = false;
         });
       } else {
+        // CRUD - CREATE: Si no existe el documento, crear uno inicial
+        await _crearPerfilInicial(userId, user.email);
         setState(() {
           _correoController.text = user.email ?? '';
           _isLoading = false;
@@ -69,11 +73,51 @@ class _MiCuentaScreenState extends State<MiCuentaScreen> {
       }
     } catch (e) {
       print('Error al cargar datos: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al cargar datos: $e')),
+      );
       setState(() => _isLoading = false);
     }
   }
 
+  // CRUD - CREATE: Crear perfil inicial del usuario
+  Future<void> _crearPerfilInicial(String userId, String? email) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .set({
+        'nombres': '',
+        'apellidoPaterno': '',
+        'apellidoMaterno': '',
+        'rut': '',
+        'correo': email ?? '',
+        'telefono': '',
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      print('Error al crear perfil inicial: $e');
+    }
+  }
+
+  // CRUD - UPDATE: Guardar/actualizar datos del usuario
   Future<void> _saveUserData() async {
+    // Validaciones
+    if (_nombresController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('El nombre es obligatorio')),
+      );
+      return;
+    }
+
+    if (_apellidoPaternoController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('El apellido paterno es obligatorio')),
+      );
+      return;
+    }
+
     setState(() => _isLoading = true);
 
     try {
@@ -85,6 +129,7 @@ class _MiCuentaScreenState extends State<MiCuentaScreen> {
       
       final userId = user.uid;
       
+      // Actualizar datos en Firestore
       await FirebaseFirestore.instance
           .collection('users')
           .doc(userId)
@@ -104,14 +149,78 @@ class _MiCuentaScreenState extends State<MiCuentaScreen> {
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Datos guardados correctamente')),
+        const SnackBar(
+          content: Text('Datos guardados correctamente'),
+          backgroundColor: Colors.green,
+        ),
       );
     } catch (e) {
       print('Error al guardar: $e');
       setState(() => _isLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al guardar: $e')),
+        SnackBar(
+          content: Text('Error al guardar: $e'),
+          backgroundColor: Colors.red,
+        ),
       );
+    }
+  }
+
+  // CRUD - DELETE: Eliminar cuenta de usuario
+  Future<void> _deleteUserAccount() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Eliminar Cuenta'),
+        content: const Text(
+          '¿Estás seguro de que deseas eliminar tu cuenta? Esta acción no se puede deshacer y perderás todos tus datos.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Eliminar'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      try {
+        final user = FirebaseAuth.instance.currentUser;
+        if (user == null) return;
+
+        // Eliminar datos del usuario de Firestore
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .delete();
+
+        // Eliminar cuenta de autenticación
+        await user.delete();
+
+        if (mounted) {
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (_) => const LoginScreen()),
+            (route) => false,
+          );
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al eliminar cuenta: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -157,6 +266,7 @@ class _MiCuentaScreenState extends State<MiCuentaScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('Eliminar Propiedad'),
         content: const Text('¿Estás seguro de que deseas eliminar esta propiedad? Esta acción no se puede deshacer.'),
         actions: [
@@ -185,13 +295,19 @@ class _MiCuentaScreenState extends State<MiCuentaScreen> {
         
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Propiedad eliminada correctamente')),
+            const SnackBar(
+              content: Text('Propiedad eliminada correctamente'),
+              backgroundColor: Colors.green,
+            ),
           );
         }
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error al eliminar: $e')),
+            SnackBar(
+              content: Text('Error al eliminar: $e'),
+              backgroundColor: Colors.red,
+            ),
           );
         }
       }
@@ -234,7 +350,12 @@ class _MiCuentaScreenState extends State<MiCuentaScreen> {
 
   Widget _buildPropertyCard(String propertyId, Map<String, dynamic> data) {
     final tipo = data['tipo'] ?? '';
-    final direccion1 = data['direccion1'] ?? '';
+    // ACTUALIZADO: Usar campo 'direccion' en lugar de 'direccion1'
+    final direccion = data['direccion'] ?? data['direccion1'] ?? '';
+    final numeroDepto = data['numeroDepto'] ?? '';
+    final direccionCompleta = numeroDepto.isNotEmpty 
+        ? '$direccion, Depto $numeroDepto' 
+        : direccion;
     final comuna = data['comuna'] ?? '';
     final precio = (data['precio'] ?? 0).toDouble();
     final metros = (data['metros'] ?? 0).toDouble();
@@ -314,7 +435,7 @@ class _MiCuentaScreenState extends State<MiCuentaScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      direccion1,
+                      direccionCompleta,
                       style: TextStyle(
                         fontSize: 12,
                         color: Colors.grey.shade600,
@@ -377,9 +498,25 @@ class _MiCuentaScreenState extends State<MiCuentaScreen> {
         foregroundColor: colors.onPrimary,
         title: const Text('Mi Cuenta'),
         actions: [
-          IconButton(
+          PopupMenuButton<String>(
             icon: const Icon(Icons.more_vert),
-            onPressed: () {},
+            onSelected: (value) {
+              if (value == 'delete_account') {
+                _deleteUserAccount();
+              }
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'delete_account',
+                child: Row(
+                  children: [
+                    Icon(Icons.delete_forever, color: Colors.red),
+                    SizedBox(width: 8),
+                    Text('Eliminar cuenta', style: TextStyle(color: Colors.red)),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -392,29 +529,45 @@ class _MiCuentaScreenState extends State<MiCuentaScreen> {
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(24),
-                    color: Colors.grey.shade50,
+                    decoration: BoxDecoration(
+                      color: colors.primaryContainer,
+                    ),
                     child: Row(
                       children: [
                         CircleAvatar(
-                          radius: 35,
-                          backgroundColor: colors.primary.withOpacity(0.2),
+                          radius: 40,
+                          backgroundColor: colors.primary,
                           child: Text(
                             _getInitials().isNotEmpty ? _getInitials() : '?',
                             style: TextStyle(
-                              fontSize: 28,
+                              fontSize: 32,
                               fontWeight: FontWeight.bold,
-                              color: colors.primary,
+                              color: colors.onPrimary,
                             ),
                           ),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
-                          child: Text(
-                            'Hola ${_nombresController.text.isNotEmpty ? _nombresController.text.split(' ').first : 'Usuario'}!',
-                            style: const TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                            ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Hola ${_nombresController.text.isNotEmpty ? _nombresController.text.split(' ').first : 'Usuario'}!',
+                                style: TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  color: colors.onPrimaryContainer,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                user?.email ?? '',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: colors.onPrimaryContainer.withOpacity(0.8),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
@@ -462,10 +615,11 @@ class _MiCuentaScreenState extends State<MiCuentaScreen> {
 
                             // Nombres
                             Text(
-                              'Nombres',
+                              'Nombres *',
                               style: TextStyle(
                                 fontSize: 13,
-                                color: Colors.grey.shade600,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.grey.shade700,
                               ),
                             ),
                             const SizedBox(height: 8),
@@ -473,7 +627,7 @@ class _MiCuentaScreenState extends State<MiCuentaScreen> {
                               controller: _nombresController,
                               enabled: _isEditing,
                               decoration: InputDecoration(
-                                hintText: 'Juanito Andres',
+                                hintText: 'Ej: Juan Pablo',
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(8),
                                 ),
@@ -485,10 +639,11 @@ class _MiCuentaScreenState extends State<MiCuentaScreen> {
 
                             // Apellido Paterno
                             Text(
-                              'Apellido Paterno',
+                              'Apellido Paterno *',
                               style: TextStyle(
                                 fontSize: 13,
-                                color: Colors.grey.shade600,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.grey.shade700,
                               ),
                             ),
                             const SizedBox(height: 8),
@@ -496,7 +651,7 @@ class _MiCuentaScreenState extends State<MiCuentaScreen> {
                               controller: _apellidoPaternoController,
                               enabled: _isEditing,
                               decoration: InputDecoration(
-                                hintText: 'Azarero',
+                                hintText: 'Ej: González',
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(8),
                                 ),
@@ -511,7 +666,8 @@ class _MiCuentaScreenState extends State<MiCuentaScreen> {
                               'Apellido Materno',
                               style: TextStyle(
                                 fontSize: 13,
-                                color: Colors.grey.shade600,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.grey.shade700,
                               ),
                             ),
                             const SizedBox(height: 8),
@@ -519,7 +675,7 @@ class _MiCuentaScreenState extends State<MiCuentaScreen> {
                               controller: _apellidoMaternoController,
                               enabled: _isEditing,
                               decoration: InputDecoration(
-                                hintText: 'Donoso',
+                                hintText: 'Ej: López',
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(8),
                                 ),
@@ -531,10 +687,11 @@ class _MiCuentaScreenState extends State<MiCuentaScreen> {
 
                             // RUT
                             Text(
-                              'Rut',
+                              'RUT',
                               style: TextStyle(
                                 fontSize: 13,
-                                color: Colors.grey.shade600,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.grey.shade700,
                               ),
                             ),
                             const SizedBox(height: 8),
@@ -542,7 +699,7 @@ class _MiCuentaScreenState extends State<MiCuentaScreen> {
                               controller: _rutController,
                               enabled: _isEditing,
                               decoration: InputDecoration(
-                                hintText: 'xx.xxx.xxx-x',
+                                hintText: 'Ej: 12.345.678-9',
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(8),
                                 ),
@@ -557,7 +714,8 @@ class _MiCuentaScreenState extends State<MiCuentaScreen> {
                               'Correo',
                               style: TextStyle(
                                 fontSize: 13,
-                                color: Colors.grey.shade600,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.grey.shade700,
                               ),
                             ),
                             const SizedBox(height: 8),
@@ -578,10 +736,11 @@ class _MiCuentaScreenState extends State<MiCuentaScreen> {
 
                             // Teléfono
                             Text(
-                              'Nº Telefono',
+                              'Teléfono',
                               style: TextStyle(
                                 fontSize: 13,
-                                color: Colors.grey.shade600,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.grey.shade700,
                               ),
                             ),
                             const SizedBox(height: 8),
@@ -590,7 +749,7 @@ class _MiCuentaScreenState extends State<MiCuentaScreen> {
                               enabled: _isEditing,
                               keyboardType: TextInputType.phone,
                               decoration: InputDecoration(
-                                hintText: '+56 9 1234 6789',
+                                hintText: '+56 9 1234 5678',
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(8),
                                 ),
@@ -604,21 +763,16 @@ class _MiCuentaScreenState extends State<MiCuentaScreen> {
                               const SizedBox(height: 24),
                               SizedBox(
                                 width: double.infinity,
-                                child: ElevatedButton(
+                                child: ElevatedButton.icon(
                                   onPressed: _saveUserData,
+                                  icon: const Icon(Icons.save),
+                                  label: const Text('Guardar cambios'),
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: colors.primary,
                                     foregroundColor: colors.onPrimary,
                                     padding: const EdgeInsets.symmetric(vertical: 16),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(8),
-                                    ),
-                                  ),
-                                  child: const Text(
-                                    'Guardar cambios',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
                                     ),
                                   ),
                                 ),
@@ -630,7 +784,7 @@ class _MiCuentaScreenState extends State<MiCuentaScreen> {
                     ),
                   ),
 
-                  // Sección de Mis Propiedades - VERSIÓN SIN orderBy
+                  // Sección de Mis Propiedades
                   if (user != null)
                     Padding(
                       padding: const EdgeInsets.all(16),
@@ -664,9 +818,7 @@ class _MiCuentaScreenState extends State<MiCuentaScreen> {
                                     .where('userId', isEqualTo: user.uid)
                                     .snapshots(),
                                 builder: (context, snapshot) {
-                                  // Manejo de errores mejorado
                                   if (snapshot.hasError) {
-                                    print('Error en StreamBuilder: ${snapshot.error}');
                                     return Container(
                                       padding: const EdgeInsets.all(16),
                                       decoration: BoxDecoration(
@@ -684,15 +836,6 @@ class _MiCuentaScreenState extends State<MiCuentaScreen> {
                                               color: Colors.red.shade700,
                                               fontWeight: FontWeight.w600,
                                             ),
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            '${snapshot.error}',
-                                            style: TextStyle(
-                                              color: Colors.red.shade600,
-                                              fontSize: 12,
-                                            ),
-                                            textAlign: TextAlign.center,
                                           ),
                                         ],
                                       ),
@@ -731,28 +874,18 @@ class _MiCuentaScreenState extends State<MiCuentaScreen> {
                                               fontSize: 14,
                                             ),
                                           ),
-                                          const SizedBox(height: 8),
-                                          Text(
-                                            'Publica tu primera propiedad desde la sección de Inicio',
-                                            textAlign: TextAlign.center,
-                                            style: TextStyle(
-                                              color: Colors.grey.shade500,
-                                              fontSize: 12,
-                                            ),
-                                          ),
                                         ],
                                       ),
                                     );
                                   }
 
-                                  // Ordenar manualmente por timestamp si existe
                                   final docs = snapshot.data!.docs;
                                   docs.sort((a, b) {
                                     final aTime = (a.data() as Map<String, dynamic>)['timestamp'] as Timestamp?;
                                     final bTime = (b.data() as Map<String, dynamic>)['timestamp'] as Timestamp?;
                                     
                                     if (aTime == null || bTime == null) return 0;
-                                    return bTime.compareTo(aTime); // Descendente
+                                    return bTime.compareTo(aTime);
                                   });
 
                                   return Column(
@@ -789,6 +922,7 @@ class _MiCuentaScreenState extends State<MiCuentaScreen> {
                       ),
                     ),
                   ),
+                  const SizedBox(height: 20),
                 ],
               ),
             ),
@@ -821,6 +955,7 @@ class _MiCuentaScreenState extends State<MiCuentaScreen> {
   }
 }
 
+// La clase EditPropertyScreen permanece igual...
 class EditPropertyScreen extends StatefulWidget {
   final String propertyId;
   final Map<String, dynamic> propertyData;
@@ -870,7 +1005,7 @@ class _EditPropertyScreenState extends State<EditPropertyScreen> {
     final data = widget.propertyData;
     
     _tipoPropiedad = data['tipo'] ?? 'Casa';
-    _direccion1Controller.text = data['direccion1'] ?? '';
+    _direccion1Controller.text = data['direccion1'] ?? data['direccion'] ?? '';
     _direccion2Controller.text = data['direccion2'] ?? '';
     _comuna = data['comuna'] ?? 'Las Condes';
     _metrosController.text = (data['metros'] ?? 0).toString();

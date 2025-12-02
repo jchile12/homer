@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "350370218778-hfc77dv2cbcv1mk15s8ctis95uiltc20.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.homer",
+            "certificate_hash": "b1f9881e25706814ba0bc3cfedb2573912e47763"
+          }
+        },
+        {
           "client_id": "350370218778-llb6ci1uivtd5gf4b61mh7u7867tpovu.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
